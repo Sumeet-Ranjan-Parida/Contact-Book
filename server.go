@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"log"
 	"net"
 
+	"github.com/Sumeet-Ranjan-Parida/ContactBook/proto"
 	"google.golang.org/grpc"
 )
 
@@ -22,4 +25,23 @@ func main() {
 	}
 }
 
-func (s *server) Getcontact(ctx context.Context, request *proto.Request) (*proto.Response, error) {}
+func (s *server) Getcontact(ctx context.Context, request *proto.Request) (*proto.Response, error) {
+
+	db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	name, number := request.GetName(), request.GetNumber()
+
+	insert, err := db.Prepare("INSERT INTO contacts(name, phno) VALUES(?,?)")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	insert.Exec(name, number)
+
+	return &proto.Response{Cname: name, Cnumber: number}, nil
+}

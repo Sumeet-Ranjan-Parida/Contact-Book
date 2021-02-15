@@ -8,8 +8,7 @@ message Request {
 }
 
 message Response {
-    string cname = 1;
-    int64 cnumber = 2;
+    string result = 1;
 }
 
 service Contact {
