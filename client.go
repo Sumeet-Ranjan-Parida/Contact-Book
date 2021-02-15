@@ -1,16 +1,24 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/Sumeet-Ranjan-Parida/ContactBook/proto"
 	"github.com/gin-gonic/gin"
 
 	"google.golang.org/grpc"
 )
+
+type contactapi struct {
+	name string
+	phno int
+}
 
 func main() {
 
@@ -27,6 +35,7 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/health", health)
+	r.GET("/view", view)
 	r.GET("/addcontact/:name/:number", func(ctx *gin.Context) {
 
 		name := ctx.Param("name")
@@ -53,4 +62,34 @@ func main() {
 
 func health(g *gin.Context) {
 	g.JSON(http.StatusOK, gin.H{"status": 200, "data": "Testing api", "alive": true})
+}
+
+func view(g *gin.Context) {
+
+	db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	var contacts []contactapi
+
+	rows, err := db.Query("SELECT name, phno FROM contacts")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for rows.Next() {
+		var api contactapi
+		err = rows.Scan(&api.name, &api.phno)
+		contacts = append(contacts, api)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	g.JSON(http.StatusOK, gin.H{
+		"contacts": contacts,
+	})
+
 }
