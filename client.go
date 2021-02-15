@@ -34,13 +34,14 @@ func main() {
 		number, err := strconv.ParseUint(ctx.Param("number"), 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Parameter"})
+			return
 		}
 
 		req := &proto.Request{Name: string(name), Number: int64(number)}
 
 		if response, err := client.Getcontact(ctx, req); err == nil {
 			ctx.JSON(http.StatusOK, gin.H{
-				"result": fmt.Sprint(response.Cname, response.Cnumber),
+				"result": fmt.Sprint(response.Result),
 			})
 		} else {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

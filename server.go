@@ -6,8 +6,11 @@ import (
 	"log"
 	"net"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/Sumeet-Ranjan-Parida/ContactBook/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct{}
@@ -19,6 +22,8 @@ func main() {
 	}
 
 	gs := grpc.NewServer()
+	proto.RegisterContactServer(gs, &server{})
+	reflection.Register(gs)
 
 	if err := gs.Serve(lis); err != nil {
 		log.Fatal("Failed to serve gRPC server on port 4040: %v", err)
@@ -43,5 +48,7 @@ func (s *server) Getcontact(ctx context.Context, request *proto.Request) (*proto
 
 	insert.Exec(name, number)
 
-	return &proto.Response{Cname: name, Cnumber: number}, nil
+	result := "Contact Created"
+
+	return &proto.Response{Result: result}, nil
 }
