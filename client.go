@@ -35,7 +35,7 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/health", health)
-	r.GET("/view", view)
+	// r.GET("/view", view)
 	r.GET("/addcontact/:name/:number", func(ctx *gin.Context) {
 
 		name := ctx.Param("name")
@@ -57,39 +57,56 @@ func main() {
 		}
 	})
 
+	r.GET("/delete/:name", func(ctx *gin.Context) {
+		name := ctx.Param("name")
+		db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
+		if err != nil {
+			panic(err.Error())
+		}
+
+		defer db.Close()
+
+		del, err := db.Query("DELETE FROM contacts WHERE name=?", name)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		defer del.Close()
+
+		ctx.JSON(http.StatusOK, gin.H{"data": name + " has been successfully deleted"})
+	})
+
 	r.Run()
 }
 
 func health(g *gin.Context) {
-	g.JSON(http.StatusOK, gin.H{"status": 200, "data": "Testing api", "alive": true})
+	g.JSON(http.StatusOK, gin.H{"status": 200, "data": "Testing API", "alive": true})
 }
 
-func view(g *gin.Context) {
+// func view(g *gin.Context) {
 
-	db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
+// 	db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
+// 	if err != nil {
+// 		panic(err.Error())
+// 	}
 
-	var contacts []contactapi
+// 	defer db.Close()
 
-	rows, err := db.Query("SELECT name, phno FROM contacts")
-	if err != nil {
-		panic(err.Error())
-	}
+// 	var contacts []*contactapi
 
-	for rows.Next() {
-		var api contactapi
-		err = rows.Scan(&api.name, &api.phno)
-		contacts = append(contacts, api)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
+// 	rows, err := db.Query("SELECT name, phno FROM contacts")
+// 	if err != nil {
+// 		panic(err.Error())
+// 	}
 
-	g.JSON(http.StatusOK, gin.H{
-		"contacts": contacts,
-	})
+// 	for rows.Next() {
+// 		c := new(contactapi)
+// 		err := rows.Scan(c.name, c.phno)
+// 		if err != nil {
+// 			panic(err.Error())
+// 		}
+// 		contacts = append(contacts, c)
+// 	}
+// 	g.JSON(http.StatusOK, contacts)
 
-}
+// }
