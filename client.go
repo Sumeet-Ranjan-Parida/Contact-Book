@@ -59,12 +59,8 @@ func main() {
 
 	r.GET("/delete/:name", func(ctx *gin.Context) {
 		name := ctx.Param("name")
-		db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
-		if err != nil {
-			panic(err.Error())
-		}
 
-		defer db.Close()
+		db := dbConn()
 
 		del, err := db.Query("DELETE FROM contacts WHERE name=?", name)
 		if err != nil {
@@ -74,6 +70,22 @@ func main() {
 		defer del.Close()
 
 		ctx.JSON(http.StatusOK, gin.H{"data": name + " has been successfully deleted"})
+	})
+
+	r.GET("/view/:name", func(ctx *gin.Context) {
+		name := ctx.Param("name")
+
+		db := dbConn()
+
+		find, err := db.Query("SELECT name FROM contacts WHERE name=?", name)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		defer find.Close()
+
+		ctx.JSON(http.StatusOK, gin.H{"data": find})
+
 	})
 
 	r.Run()
@@ -110,3 +122,12 @@ func health(g *gin.Context) {
 // 	g.JSON(http.StatusOK, contacts)
 
 // }
+
+func dbConn() (db *sql.DB) {
+	db, err := sql.Open("mysql", "root:sumeet@tcp(127.0.0.1:3306)/contactbook")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return db
+}
