@@ -1,6 +1,6 @@
 # ContactBook-Using-gRPC
 
-Create, view and delete contact.
+Create, view and delete contact
 
 Run the server first:
 
